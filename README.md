@@ -1,4 +1,4 @@
-# MCPWindow v0.8.4
+# MCPWindow v0.8.5
 
 跨平台 MCP 服务器可视化管理台（Windows / macOS / Linux，优先适配 Windows 与 macOS）。支持多个独立 MCP 服务器的接入、真实状态探测、进程托管、分区授权和第三方 Tool 插件扩展。
 

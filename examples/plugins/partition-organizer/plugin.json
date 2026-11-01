@@ -1,0 +1,28 @@
+{
+  "id": "mcpwindow.examples.partition-organizer",
+  "name": "分区整理示例",
+  "version": "1.0.0",
+  "description": "查看本地分区，或创建带颜色和分类的工程分区。",
+  "entry": "tool.js",
+  "permissions": ["partitions.read", "partitions.write"],
+  "tools": [
+    {
+      "name": "list_partitions",
+      "description": "列出 MCPWindow 中的本地分区。",
+      "inputSchema": { "type": "object", "properties": {} }
+    },
+    {
+      "name": "create_project_partition",
+      "description": "创建一个工程类型的本地分区。",
+      "inputSchema": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string", "default": "由分区整理示例插件创建" },
+          "color": { "type": "string", "enum": ["#4f8dff", "#22c993", "#a78bfa"], "default": "#a78bfa" }
+        }
+      }
+    }
+  ]
+}

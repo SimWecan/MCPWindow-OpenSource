@@ -1,0 +1,32 @@
+{
+  "id": "mcpwindow.e2e-plugin",
+  "name": "MCPWindow E2E Plugin",
+  "version": "1.0.0",
+  "description": "Verifies third-party plugin isolation and host management APIs.",
+  "entry": "tool.js",
+  "permissions": ["servers.read", "partitions.read", "partitions.write"],
+  "tools": [
+    {
+      "name": "workspace_summary",
+      "description": "Read servers and partitions from MCPWindow.",
+      "inputSchema": { "type": "object", "properties": {} }
+    },
+    {
+      "name": "create_partition",
+      "description": "Create a real local partition in MCPWindow.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string", "default": "Created by an isolated plugin" }
+        }
+      }
+    },
+    {
+      "name": "security_probe",
+      "description": "Return sandbox capabilities and verify permission rejection.",
+      "inputSchema": { "type": "object", "properties": {} }
+    }
+  ]
+}

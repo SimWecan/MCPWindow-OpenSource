@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "name": "MCPWindow",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/electron-dist": true,
+      "**/release": true,
+      "**/test-results": true,
+      "**/playwright-report": true
+    }
+  }
+}

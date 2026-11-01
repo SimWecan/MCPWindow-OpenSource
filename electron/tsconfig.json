@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "../electron-dist",
+    "sourceMap": false
+  },
+  "include": ["main.cts", "preload.cts", "accessLogs.cts", "pluginManager.cts", "pluginPreload.cts", "processSupervisor.cts", "closeDialogPreload.cts"]
+}

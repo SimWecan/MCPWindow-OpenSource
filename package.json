@@ -1,0 +1,87 @@
+{
+  "name": "mcp-window",
+  "version": "0.8.5",
+  "description": "MCPWindow - 跨平台 MCP 服务器可视化管理台（Windows / macOS / Linux）",
+  "private": true,
+  "author": "MCPWindow Contributors",
+  "license": "MIT",
+  "type": "module",
+  "main": "electron-dist/main.cjs",
+  "scripts": {
+    "dev": "vite --host --port 7100",
+    "build": "tsc --noEmit && vite build",
+    "test": "tsc -p electron/tsconfig.json && vitest run --environment node src",
+    "test:e2e": "tsc -p electron/tsconfig.json && vite build && playwright test",
+    "test:extension": "node --test browser-extension/mcp.test.js browser-extension/config-parser.test.js browser-extension/logs.test.js browser-extension/charts.test.js browser-extension/interactions.test.js browser-extension/catalog.test.js && node scripts/test-browser-extension.mjs",
+    "preview": "vite preview --host --port 7100",
+    "electron:build": "tsc -p electron/tsconfig.json && vite build && node scripts/build.cjs",
+    "electron:dir": "tsc -p electron/tsconfig.json && vite build && node scripts/build.cjs --dir",
+    "dev:electron": "concurrently -k \"vite --host --port 7100\" \"wait-on http://localhost:7100 && cross-env MCPWINDOW_DEV=1 electron .\""
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^6.1.2",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "dayjs": "^1.11.13",
+    "echarts": "^6.1.0",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.4",
+    "typescript": "~5.6.3",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5",
+    "wait-on": "^8.0.1",
+    "zustand": "^4.5.7"
+  },
+  "build": {
+    "appId": "com.mcpwindow.app",
+    "productName": "MCPWindow",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron-dist/**/*",
+      "!electron-dist/**/*.log",
+      "build/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "MCPWindow"
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "artifactName": "${productName}-${version}.${ext}"
+    }
+  }
+}

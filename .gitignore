@@ -1,0 +1,10 @@
+node_modules
+dist
+electron-dist
+release
+release-*/
+*.log
+.DS_Store
+test-results
+playwright-report
+.e2e-profile-*

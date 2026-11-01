@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关闭 MCPWindow</title>
+  <link rel="stylesheet" href="close-dialog.css">
+</head>
+<body>
+  <main class="dialog" role="dialog" aria-modal="true" aria-labelledby="title">
+    <button id="dismiss" class="dismiss" aria-label="取消">×</button>
+    <div class="heading"><div class="mark">M</div><div><h1 id="title">关闭 MCPWindow</h1><p>选择接下来要执行的操作</p></div></div>
+    <div class="options">
+      <label class="option"><input type="radio" name="close-action" value="minimize" checked><span class="radio"></span><span><strong>最小化到系统托盘</strong><small>在任务栏右下角继续运行状态监控</small></span></label>
+      <label class="option"><input type="radio" name="close-action" value="quit"><span class="radio"></span><span><strong>退出应用</strong><small>关闭管理窗口，不影响 MCP 服务器</small></span></label>
+    </div>
+    <p class="assurance"><span>✓</span> 两种选择都不会启动或停止 MCP 服务器</p>
+    <div class="actions"><button id="cancel" class="secondary">取消</button><button id="apply" class="primary">确定</button></div>
+  </main>
+  <script src="close-dialog.js"></script>
+</body>
+</html>

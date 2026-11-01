@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "MCPWindow Companion",
+  "version": "0.8.5",
+  "description": "钉住并拖动 MCP 管理面板，智能识别配置，查看状态及访问日志图表。",
+  "permissions": ["storage", "alarms", "activeTab", "scripting"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": {
+    "default_title": "MCPWindow",
+    "default_popup": "popup.html",
+    "default_icon": { "128": "icon.png" }
+  },
+  "icons": { "128": "icon.png" },
+  "web_accessible_resources": [{
+    "resources": ["popup.html", "icon.png"],
+    "matches": ["http://*/*", "https://*/*"]
+  }]
+}

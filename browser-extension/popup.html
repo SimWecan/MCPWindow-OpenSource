@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCPWindow</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="window-header">
+    <div class="brand"><img src="icon.png" alt=""><div><strong>MCPWindow</strong><span>远程 MCP 状态中心</span></div></div>
+    <div class="header-actions">
+      <button id="pin" class="icon-button pin-button" title="钉在当前网页" aria-label="钉在当前网页"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5M9 10.8V4h6v6.8a2 2 0 0 0 .6 1.4L17 14v2H7v-2l1.4-1.8a2 2 0 0 0 .6-1.4Z"/></svg></button>
+      <button id="refresh" class="icon-button" title="刷新全部" aria-label="刷新全部">↻</button>
+    </div>
+  </header>
+  <main>
+    <section id="list-view">
+      <div id="summary" class="summary">正在读取服务器…</div>
+      <div class="catalog-toolbar">
+        <input id="server-search" type="search" placeholder="搜索名称或地址" aria-label="搜索服务器">
+        <select id="server-status-filter" aria-label="按状态筛选"><option value="all">全部状态</option><option value="online">在线</option><option value="auth">需凭证</option><option value="offline">离线</option><option value="unknown">待探测</option></select>
+        <select id="server-sort" aria-label="服务器排序"><option value="custom">自定义顺序</option><option value="name">按名称</option><option value="status">按状态</option><option value="recent">按最近探测</option></select>
+      </div>
+      <div class="list-hint">点击卡片查看详情 · 自定义顺序且无筛选时长按拖动排序</div>
+      <section id="servers" aria-live="polite"></section>
+      <details id="activity-panel">
+        <summary>服务器操作记录 <span id="activity-count"></span></summary>
+        <div class="activity-actions"><button id="clear-activities" class="secondary" type="button">清空记录</button></div>
+        <div id="activities" class="activities"></div>
+      </details>
+      <details id="json-panel">
+        <summary>✦ 智能识别 mcp.json</summary>
+        <div class="json-content">
+          <label for="config-json">粘贴 JSON 配置，仅在本地识别并填写</label>
+          <textarea id="config-json" rows="6" spellcheck="false" placeholder='{"mcpServers":{"demo":{"url":"https://example.com/mcp","headers":{"Authorization":"Bearer ..."}}}}'></textarea>
+          <button id="parse-json" class="secondary" type="button">智能识别并填写</button>
+          <div id="parse-message" class="inline-message" role="status"></div>
+        </div>
+      </details>
+      <details id="add-panel">
+        <summary>＋ 添加远程 MCP</summary>
+        <form id="server-form">
+          <label>名称<input id="name" required maxlength="60" placeholder="我的 MCP" autocomplete="off"></label>
+          <label>服务器地址<input id="url" type="url" required placeholder="https://example.com/mcp" autocomplete="off"></label>
+          <label>认证方式<select id="auth-type"><option value="none">无需认证</option><option value="bearer">Bearer Token</option><option value="basic">Basic Auth</option><option value="api-key">API Key</option></select></label>
+          <label id="username-row" hidden>用户名<input id="username" autocomplete="off"></label>
+          <label id="header-row" hidden>API Key 请求头<input id="header-name" value="X-API-Key" autocomplete="off"></label>
+          <label id="credential-row" hidden>凭证<input id="credential" type="password" autocomplete="off"></label>
+          <details class="log-config">
+            <summary>访问日志同步（可选）</summary>
+            <label>日志管理接口<input id="management-url" type="url" placeholder="https://example.com/manage" autocomplete="off"></label>
+            <label>管理 admin 凭证<input id="management-key" type="password" placeholder="留空则使用普通访问凭证" autocomplete="off"></label>
+            <p class="notice">接口约定为 GET /manage/access-logs，返回 logs 数组。非本机管理接口必须使用 HTTPS。</p>
+          </details>
+          <button class="primary" type="submit">保存并探测</button>
+          <div id="form-message" class="inline-message" role="status"></div>
+        </form>
+      </details>
+      <p class="notice">仅支持 HTTP(S) MCP。识别过程不会联网；凭证仅保存在当前浏览器扩展存储中。</p>
+    </section>
+    <section id="detail-view" hidden>
+      <button id="back" class="back-button" type="button">← 返回服务器列表</button>
+      <div class="detail-heading"><span id="detail-dot" class="status-dot"></span><h2 id="detail-name"></h2></div>
+      <span id="detail-status" class="status-chip"></span>
+      <dl class="detail-list">
+        <div><dt>服务器地址</dt><dd id="detail-url"></dd></div>
+        <div><dt>认证方式</dt><dd id="detail-auth"></dd></div>
+        <div><dt>最近探测结果</dt><dd id="detail-result"></dd></div>
+        <div><dt>最近探测时间</dt><dd id="detail-time"></dd></div>
+      </dl>
+      <section class="log-dashboard" aria-label="访问日志可视化">
+        <div class="log-heading"><h3>访问日志</h3><span id="log-sync-time">每 30 分钟同步</span></div>
+        <div class="log-stats"><div><span>24 小时访问</span><strong id="log-total-24h">0</strong></div><div><span>14 天访问</span><strong id="log-total-14d">0</strong></div><div><span>24 小时成功率</span><strong id="log-success-24h">—</strong></div></div>
+        <div class="chart-card"><h4>14 天访问趋势</h4><div id="trend-chart"></div></div>
+        <div class="chart-card"><h4>24 小时访问分布</h4><div id="hourly-chart"></div></div>
+        <div class="chart-card"><h4>热门访问端点</h4><div id="endpoint-chart"></div></div>
+        <div id="log-sync-error" class="inline-message" role="status"></div>
+      </section>
+      <details id="log-settings" class="log-config">
+        <summary>日志接口设置</summary>
+        <label>日志管理接口<input id="detail-management-url" type="url" placeholder="默认同源 /manage/access-logs" autocomplete="off"></label>
+        <label>管理 admin 凭证<input id="detail-management-key" type="password" placeholder="留空保持当前凭证配置" autocomplete="off"></label>
+        <button id="save-log-settings" class="secondary" type="button">保存日志设置并同步</button>
+        <div id="log-settings-message" class="inline-message" role="status"></div>
+      </details>
+      <button id="refresh-detail" class="primary" type="button">重新探测并同步日志</button>
+      <p class="notice">详情不会展示已保存的凭证。长按列表卡片可调整顺序。</p>
+    </section>
+  </main>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

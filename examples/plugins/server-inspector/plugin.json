@@ -1,0 +1,24 @@
+{
+  "id": "mcpwindow.examples.server-inspector",
+  "name": "服务器巡检示例",
+  "version": "1.0.0",
+  "description": "只读汇总 MCP 服务器状态，或按名称检查单台服务器。",
+  "entry": "tool.js",
+  "permissions": ["servers.read"],
+  "tools": [
+    {
+      "name": "inspect_servers",
+      "description": "统计全部服务器并按传输方式和运行状态分组。",
+      "inputSchema": { "type": "object", "properties": {} }
+    },
+    {
+      "name": "find_server",
+      "description": "按名称查找服务器，返回连接配置但不包含凭证。",
+      "inputSchema": {
+        "type": "object",
+        "required": ["name"],
+        "properties": { "name": { "type": "string" } }
+      }
+    }
+  ]
+}

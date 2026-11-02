@@ -3,7 +3,7 @@ import packageInfo from '../../package.json'
 import { checkForUpdates, compareVersions } from './updateCheck'
 
 const response = (status: number, body: unknown = {}) => ({ status, ok: status >= 200 && status < 300, json: async () => body }) as Response
-const validArtifact = { url: 'https://mcpwindow.terrafin.top/downloads/MCPWindow-Setup-99.0.0.exe', size: 123456, sha256: 'a'.repeat(64) }
+const validArtifact = { url: 'https://software.terrafin.top/downloads/MCPWindow-Setup-99.0.0.exe', size: 123456, sha256: 'a'.repeat(64) }
 
 describe('软件版本检查', () => {
   it('按数字语义化版本比较而非字符串比较', () => {
@@ -24,7 +24,7 @@ describe('软件版本检查', () => {
 
   it('拒绝跨域、HTTP、无效摘要和异常大小的下载信息', async () => {
     const invalid = [
-      { ...validArtifact, url: 'http://mcpwindow.terrafin.top/update.exe' },
+      { ...validArtifact, url: 'http://software.terrafin.top/update.exe' },
       { ...validArtifact, url: 'https://example.com/update.exe' },
       { ...validArtifact, sha256: 'invalid' },
       { ...validArtifact, size: -1 },

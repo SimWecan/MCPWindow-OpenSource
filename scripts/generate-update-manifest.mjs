@@ -13,7 +13,7 @@ const files = {
 const artifacts = Object.fromEntries(Object.entries(files).map(([platform, name]) => {
   const content = fs.readFileSync(path.join(root, 'release', name))
   return [platform, {
-    url: `https://mcpwindow.terrafin.top/downloads/${name}`,
+    url: `https://software.terrafin.top/downloads/${name}`,
     size: content.length,
     sha256: createHash('sha256').update(content).digest('hex'),
   }]

@@ -1,6 +1,6 @@
 import packageInfo from '../../package.json'
 
-export const UPDATE_MANIFEST_URL = 'https://mcpwindow.terrafin.top/downloads/version.json'
+export const UPDATE_MANIFEST_URL = 'https://software.terrafin.top/downloads/version.json'
 
 export interface UpdateArtifact {
   url: string
@@ -48,7 +48,7 @@ export async function checkForUpdates(fetcher: typeof fetch = fetch): Promise<Up
   return {
     currentVersion: packageInfo.version,
     latestVersion,
-    releaseUrl: 'https://mcpwindow.terrafin.top/download.html',
+    releaseUrl: 'https://software.terrafin.top/mcpwindowdownload.html',
     publishedAt: typeof manifest.publishedAt === 'string' ? manifest.publishedAt : undefined,
     updateAvailable: compareVersions(packageInfo.version, latestVersion) > 0,
     artifacts: {

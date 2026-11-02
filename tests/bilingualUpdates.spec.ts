@@ -24,9 +24,9 @@ test.afterEach(async () => {
 })
 
 test('添加服务器智能识别和版本更新检查均支持英文', async () => {
-  await page.route('https://mcpwindow.terrafin.top/downloads/version.json', route => route.fulfill({
+  await page.route('https://software.terrafin.top/downloads/version.json', route => route.fulfill({
     status: 200, contentType: 'application/json', body: JSON.stringify({
-      version: '99.0.0', artifacts: { 'darwin-arm64': { url: 'https://mcpwindow.terrafin.top/downloads/MCPWindow-99.0.0-arm64.dmg', size: 123456, sha256: 'a'.repeat(64) } },
+      version: '99.0.0', artifacts: { 'darwin-arm64': { url: 'https://software.terrafin.top/downloads/MCPWindow-99.0.0-arm64.dmg', size: 123456, sha256: 'a'.repeat(64) } },
     }),
   }))
   await app.evaluate(({ ipcMain }) => {

@@ -8,7 +8,7 @@ interface UpdateArtifact { url: string; sha256: string; size: number }
 
 function validateArtifact(input: UpdateArtifact): UpdateArtifact {
   const url = new URL(input.url)
-  if (url.protocol !== 'https:' || url.origin !== 'https://mcpwindow.terrafin.top') throw new Error('更新下载地址不受信任')
+  if (url.protocol !== 'https:' || url.origin !== 'https://software.terrafin.top') throw new Error('更新下载地址不受信任')
   if (!/^[a-f0-9]{64}$/i.test(input.sha256) || !Number.isSafeInteger(input.size) || input.size <= 0 || input.size > 600 * 1024 * 1024) throw new Error('更新包校验信息无效')
   return { url: url.href, sha256: input.sha256.toLowerCase(), size: input.size }
 }

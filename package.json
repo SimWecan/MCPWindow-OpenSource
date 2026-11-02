@@ -12,7 +12,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "tsc -p electron/tsconfig.json && vitest run --environment node src",
     "test:e2e": "tsc -p electron/tsconfig.json && vite build && playwright test",
-    "test:extension": "node --test browser-extension/mcp.test.js browser-extension/config-parser.test.js browser-extension/logs.test.js browser-extension/charts.test.js browser-extension/interactions.test.js browser-extension/catalog.test.js && node scripts/test-browser-extension.mjs",
+    "test:extension": "node --test browser-extension/mcp.test.js browser-extension/config-parser.test.js browser-extension/logs.test.js browser-extension/charts.test.js browser-extension/interactions.test.js browser-extension/catalog.test.js browser-extension/i18n.test.js && node scripts/test-browser-extension.mjs",
     "preview": "vite preview --host --port 7100",
     "electron:build": "tsc -p electron/tsconfig.json && vite build && node scripts/build.cjs",
     "electron:dir": "tsc -p electron/tsconfig.json && vite build && node scripts/build.cjs --dir",

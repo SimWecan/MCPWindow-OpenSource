@@ -5,6 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { closePluginWindows, registerPluginIpc } from './pluginManager.cjs'
 import { inspectLocalAccessLogs, type AccessLogServerConfig } from './accessLogs.cjs'
+import { registerUpdateIpc } from './updater.cjs'
 
 // 启动诊断日志（桌面端启动验证用，开源版保留以便用户排障）
 const diagLog = path.join(os.tmpdir(), 'mcpwindow-main.log')
@@ -31,6 +32,8 @@ const isDev = process.env.MCPWINDOW_DEV === '1'
 let allowWindowClose = false
 let tray: Tray | null = null
 let closePrompt: BrowserWindow | null = null
+
+registerUpdateIpc(() => { allowWindowClose = true; app.quit() })
 
 function restoreMainWindow(win: BrowserWindow): void {
   win.setSkipTaskbar(false)

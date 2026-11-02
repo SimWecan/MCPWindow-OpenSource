@@ -1,6 +1,9 @@
 import type { LiveStatus } from '../types'
 
 export interface BridgeApi {
+  platform?: string
+  updateDownload?: (artifact: import('./updateCheck').UpdateArtifact) => Promise<boolean>
+  onUpdateProgress?: (cb: (progress: { received: number; total: number }) => void) => () => void
   probeLocal?: (id: string, command: string) => Promise<LiveStatus>
   probeHttp?: (url: string, headers: Record<string, string>, timeoutMs: number) => Promise<{ status: number; body: string }>
   procStart?: (id: string, command: string, args: string | string[], env?: Record<string, string>) => Promise<boolean>

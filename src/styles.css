@@ -76,6 +76,32 @@
   color-scheme: light;
 }
 
+/* TerraFin 星际地平线系列配色：夜幕黑底 + 落日红主色 + 星空紫/暮光蓝辅助 + 雾灰白文字 */
+:root[data-theme='terrafin'] {
+  --bg: #1C1A24;
+  --bg-2: #232031;
+  --bg-3: #2E2942;
+  --surface-raised: #3B2A5A;
+  --sidebar: rgba(28, 26, 36, .96);
+  --border: #3B3352;
+  --border-strong: #574C78;
+  --text: #F2EFEA;
+  --text-2: #B9B3C6;
+  --text-3: #837D94;
+  --accent: #E4572E;
+  --accent-2: #4A6FA5;
+  --accent-contrast: #FFF6F0;
+  --accent-soft: rgba(228, 87, 46, .15);
+  --accent-soft-2: rgba(74, 111, 165, .12);
+  --green: #4BBF8E;
+  --red: #FB7185;
+  --orange: #FBBF24;
+  --purple: #8F7BD8;
+  --chart-grid: rgba(133, 120, 160, .28);
+  --shadow: 0 12px 32px rgba(5, 3, 12, .22);
+  color-scheme: dark;
+}
+
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 html { background: var(--bg); }

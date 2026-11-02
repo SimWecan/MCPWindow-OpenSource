@@ -7,6 +7,9 @@ import { validateServerConfig } from '../utils/serverConfig'
 import { refreshServerStatuses } from '../utils/status'
 import { probeServer } from '../utils/probe'
 import { syncManagedServer } from '../utils/management'
+import { parseMCPConfig } from '../data/localConfig'
+import { useTranslation } from '../i18n'
+import { useLanguage } from '../store/useLanguage'
 
 export interface ServerFormState {
   name: string
@@ -23,6 +26,7 @@ export interface ServerFormState {
   managementUrl: string
   managementKey: string
   tagsText: string
+  env?: Record<string, string>
 }
 
 interface Props {
@@ -62,6 +66,37 @@ export default function ServerFormModal({ open, initial, clone = false, defaultP
   const [testMessage, setTestMessage] = useState('')
   const [creatingPartition, setCreatingPartition] = useState(false)
   const [partitionName, setPartitionName] = useState('')
+  const [configJson, setConfigJson] = useState('')
+  const [importMessage, setImportMessage] = useState('')
+  const { t } = useTranslation()
+  const language = useLanguage((state) => state.language)
+
+  const parseConfig = () => {
+    try {
+      const parsed = parseMCPConfig(JSON.parse(configJson))
+      const first = parsed[0]
+      if (!first) throw new Error(t('未找到可识别的 MCP 服务器配置'))
+      const headers = first.headers ?? {}
+      const authorization = Object.entries(headers).find(([name]) => name.toLowerCase() === 'authorization')?.[1] ?? ''
+      const basic = decodeBasicCredential(authorization.replace(/^Basic\s+/i, ''))
+      const apiEntry = Object.entries(headers).find(([name]) => name.toLowerCase() !== 'authorization')
+      const accessType: AccessAuthType = /^Basic\s+/i.test(authorization) ? 'basic' : apiEntry ? 'api-key' : 'bearer'
+      setForm((current) => ({
+        ...current, name: first.name, description: first.description, command: first.command,
+        args: first.args, env: first.env, transport: first.transport,
+        accessType, accessUsername: accessType === 'basic' ? basic.username : '',
+        accessKey: accessType === 'basic' ? basic.credential : accessType === 'api-key' ? apiEntry?.[1] ?? '' : authorization.replace(/^Bearer\s+/i, ''),
+        apiHeader: apiEntry?.[0] ?? 'X-API-Key',
+      }))
+      setImportMessage(language === 'en'
+        ? `Filled “${first.name}” from ${parsed.length} server(s). Review before saving.`
+        : `已从 ${parsed.length} 项配置中识别并填写“${first.name}”，请核对后保存。`)
+      setFormError(null)
+    } catch (reason) {
+      setImportMessage('')
+      setFormError(reason instanceof Error ? reason.message : t('无法识别 JSON 配置'))
+    }
+  }
 
   const createPartition = () => {
     const name = partitionName.trim()
@@ -104,10 +139,12 @@ export default function ServerFormModal({ open, initial, clone = false, defaultP
     setTestMessage('')
     setCreatingPartition(false)
     setPartitionName('')
+    setConfigJson('')
+    setImportMessage('')
     if (initial) {
       setForm({
         name: initial.name, partitionId: initial.partitionId, description: initial.description,
-        command: initial.command, args: initial.args, version: initial.version, transport: initial.transport,
+        command: initial.command, args: initial.args, env: initial.env, version: initial.version, transport: initial.transport,
         ...accessFields(initial),
         managementUrl: initial.managementUrl ?? '', managementKey: initial.managementKey ?? '', tagsText: (initial.tags ?? []).join(', '),
       })
@@ -166,6 +203,16 @@ export default function ServerFormModal({ open, initial, clone = false, defaultP
         </>
       }
     >
+      <details className="config-section smart-config-import">
+        <summary>{t('智能识别 mcp.json')}</summary>
+        <div className="field">
+          <label htmlFor="server-config-json">{t('粘贴 JSON 配置，仅在本地识别并填写')}</label>
+          <textarea id="server-config-json" rows={5} value={configJson} onChange={(event) => setConfigJson(event.target.value)} spellCheck={false} placeholder='{"mcpServers":{"demo":{"url":"https://example.com/mcp","headers":{"Authorization":"Bearer ..."}}}}' />
+          <div className="field-hint">{t('支持本地 stdio、远程地址和认证请求头；多项配置默认填写第一项，不会自动保存。')}</div>
+        </div>
+        <button type="button" className="btn" disabled={!configJson.trim()} onClick={parseConfig}>{t('智能识别并填写')}</button>
+        {importMessage && <div className="form-notice" role="status">{importMessage}</div>}
+      </details>
       {formError && <div role="alert" style={{ color: 'var(--red)', marginBottom: 12, fontSize: 13 }}>{formError}</div>}
       <details className="config-section" open>
         <summary>基础连接</summary>

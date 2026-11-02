@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import ThemeSwitcher from './components/ThemeSwitcher'
-import { I18nRuntime } from './i18n'
+import { I18nRuntime, useTranslation } from './i18n'
 import { subscribeProcExit } from './utils/control'
 import { registerPluginHost } from './utils/pluginHostApi'
 import { refreshServerData, startStatusPolling } from './utils/status'
@@ -39,6 +39,7 @@ function NavIcon({ name }: { name: string }) {
 export default function App() {
   const servers = useStore((s) => s.servers)
   const liveStatus = useStore((s) => s.liveStatus)
+  const { t } = useTranslation()
   const localConfigImported = useStore((s) => s.localConfigImported)
   const importLocalConfig = useStore((s) => s.importLocalConfig)
   useTheme((state) => state.theme)
@@ -88,7 +89,7 @@ export default function App() {
           ))}
         </nav>
         <div className="sidebar-footer">
-          <div className="sidebar-status"><span className="dot" />运行中 {running} · 异常 {crashed}</div>
+          <div className="sidebar-status"><span className="dot" />{t(`运行中 ${running} · 异常 ${crashed}`)}</div>
           <ThemeSwitcher />
         </div>
       </aside>

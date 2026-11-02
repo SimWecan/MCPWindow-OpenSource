@@ -8,6 +8,7 @@ import { bridge } from '../utils/bridge'
 import type { ToolPlugin, ToolPluginTool } from '../types'
 import { validateToolArguments } from '../utils/pluginArguments'
 import { appendPluginActivity, filterAndSortPlugins, readPluginActivities, PLUGIN_ACTIVITY_KEY, type PluginActivity, type PluginActivityAction, type PluginSort, type PluginStatusFilter } from '../utils/pluginCatalog'
+import { checkForUpdates, type UpdateResult } from '../utils/updateCheck'
 
 function argumentTemplate(tool?: ToolPluginTool): string {
   const schema = tool?.inputSchema
@@ -46,6 +47,39 @@ export default function ThemeSwitcher() {
   const [pluginStatus, setPluginStatus] = useState<PluginStatusFilter>('all')
   const [pluginSort, setPluginSort] = useState<PluginSort>('name')
   const [activities, setActivities] = useState<PluginActivity[]>(() => readPluginActivities())
+  const [checkingUpdate, setCheckingUpdate] = useState(false)
+  const [updateResult, setUpdateResult] = useState<UpdateResult | null>(null)
+  const [updateError, setUpdateError] = useState('')
+  const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false)
+  const [downloadingUpdate, setDownloadingUpdate] = useState(false)
+  const [updateProgress, setUpdateProgress] = useState({ received: 0, total: 0 })
+  const checkUpdate = async () => {
+    if (checkingUpdate) return
+    setCheckingUpdate(true)
+    setUpdateResult(null)
+    setUpdateError('')
+    try {
+      const checked = await checkForUpdates()
+      setUpdateResult(checked)
+      if (checked.updateAvailable) setUpdateConfirmOpen(true)
+    } catch (reason) { setUpdateError(reason instanceof Error ? reason.message : String(reason)) }
+    finally { setCheckingUpdate(false) }
+  }
+  useEffect(() => api?.onUpdateProgress?.(setUpdateProgress), [api])
+  const startUpdate = async () => {
+    if (!updateResult || !api?.updateDownload || downloadingUpdate) return
+    const key = api.platform === 'darwin' ? 'darwin-arm64' : api.platform === 'win32' ? 'win32-x64' : null
+    const selectedArtifact = key ? updateResult.artifacts[key] : undefined
+    if (!selectedArtifact) { setUpdateError(t('当前平台暂无可用的更新安装包。')); return }
+    setDownloadingUpdate(true)
+    setUpdateError('')
+    setUpdateProgress({ received: 0, total: selectedArtifact.size })
+    try { await api.updateDownload(selectedArtifact) }
+    catch (reason) {
+      setUpdateError(reason instanceof Error ? reason.message : String(reason))
+      setDownloadingUpdate(false)
+    }
+  }
   const plugin = useMemo(() => plugins.find((item) => item.id === pluginId) ?? plugins[0], [plugins, pluginId])
   const visiblePlugins = useMemo(() => filterAndSortPlugins(plugins, pluginQuery, pluginStatus, pluginSort), [plugins, pluginQuery, pluginStatus, pluginSort])
   const matchingTools = useMemo(() => plugin?.tools.filter((tool) => `${tool.name} ${tool.description}`.toLowerCase().includes(toolQuery.trim().toLowerCase())) ?? [], [plugin, toolQuery])
@@ -130,6 +164,16 @@ export default function ThemeSwitcher() {
               <button className={`btn ${language === 'en' ? 'btn-primary' : ''}`} aria-pressed={language === 'en'} onClick={() => setLanguage('en')}>English</button>
             </div>
             <p className="field-hint">{t('语言即时生效并保存在本机。')}</p>
+          </section>
+          <section className="settings-section update-settings">
+            <h4>{t('软件更新')}</h4>
+            <p className="field-hint">{t('从软件下载站检查新版本；确认后下载并校验安装包，再启动系统安装流程。')}</p>
+            <button className="btn" disabled={checkingUpdate} onClick={() => void checkUpdate()}>{checkingUpdate ? t('正在检查…') : t('检测版本更新')}</button>
+            {updateResult && <div className="form-notice update-result" role="status">
+              <span>{updateResult.updateAvailable ? `${t('发现新版本')}: v${updateResult.latestVersion}` : `${t('当前已是最新版本')} · v${updateResult.currentVersion}`}</span>
+              {updateResult.updateAvailable && <a href={updateResult.releaseUrl} target="_blank" rel="noreferrer">{t('查看发布说明')}</a>}
+            </div>}
+            {updateError && <div className="settings-error" role="alert">{updateError === 'NO_RELEASE' ? t('开发者尚未发布 Release，请稍后再试。') : updateError.startsWith('UPDATE_HTTP_') ? `${t('版本服务暂时不可用')} (${updateError.slice(12)})` : t('检查更新失败，请检查网络后重试。')}</div>}
           </section>
           <section className="settings-section">
             <h4>{t('界面主题')}</h4>
@@ -238,6 +282,23 @@ export default function ThemeSwitcher() {
             </details>
           </>}
         </section>}
+      </Modal>
+      <Modal
+        title={t('发现新版本')}
+        open={updateConfirmOpen && !!updateResult}
+        onClose={() => { if (!downloadingUpdate) setUpdateConfirmOpen(false) }}
+        footer={<>
+          <button className="btn" disabled={downloadingUpdate} onClick={() => setUpdateConfirmOpen(false)}>{t('暂不更新')}</button>
+          <button className="btn btn-primary" disabled={downloadingUpdate || !api?.updateDownload} onClick={() => void startUpdate()}>{downloadingUpdate ? t('正在下载更新…') : t('立即更新')}</button>
+        </>}
+      >
+        <p>{language === 'en' ? `MCPWindow v${updateResult?.latestVersion} is available. Download the verified installer and start the system installation now?` : `检测到 MCPWindow v${updateResult?.latestVersion}。是否下载经过校验的安装包并启动系统安装流程？`}</p>
+        <p className="field-hint">{t('下载完成后将启动系统安装器并退出 MCPWindow；macOS 会打开 DMG，Windows 会启动安装程序。')}</p>
+        {downloadingUpdate && <div role="status">
+          <progress max={updateProgress.total || updateResult?.artifacts[api?.platform === 'darwin' ? 'darwin-arm64' : 'win32-x64']?.size || 1} value={updateProgress.received} />
+          <p>{t('已下载')} {(updateProgress.received / 1024 / 1024).toFixed(1)} / {(updateProgress.total / 1024 / 1024).toFixed(1)} MB</p>
+        </div>}
+        {updateError && <div className="settings-error" role="alert">{updateError}</div>}
       </Modal>
     </>
   )

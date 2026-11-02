@@ -8,6 +8,12 @@ contextBridge.exposeInMainWorld('mcpwindow', {
     chrome: process.versions.chrome,
     node: process.versions.node,
   },
+  updateDownload: (artifact: { url: string; sha256: string; size: number }) => ipcRenderer.invoke('mcpwindow:update-download', artifact),
+  onUpdateProgress: (cb: (progress: { received: number; total: number }) => void) => {
+    const listener = (_e: IpcRendererEvent, progress: { received: number; total: number }) => cb(progress)
+    ipcRenderer.on('mcpwindow:update-progress', listener)
+    return () => ipcRenderer.removeListener('mcpwindow:update-progress', listener)
+  },
   // 探测本地 stdio MCP 可执行文件是否存在
   probeLocal: (id: string, command: string) => ipcRenderer.invoke('mcpwindow:probe-local', id, command),
   probeHttp: (url: string, headers: Record<string, string>, timeoutMs: number) =>

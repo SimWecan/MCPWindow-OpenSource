@@ -4,8 +4,15 @@ import { attachCardInteractions } from './interactions.js'
 import { normalizeManagementUrl } from './logs.js'
 import { dailySeries, hourlySeries, renderBarChart, renderEndpoints, renderLineChart } from './charts.js'
 import { appendServerActivity, filterAndSortServers } from './catalog.js'
+import { applyTranslations } from './i18n.js'
 
 const $ = id => document.getElementById(id)
+let language = 'zh'
+const text = (zh, en) => language === 'en' ? en : zh
+const localize = () => {
+  applyTranslations(document.body, language)
+  $('language-toggle').textContent = language === 'en' ? '中' : 'EN'
+}
 const labels = { online: '在线', auth: '需凭证', offline: '离线', unknown: '待探测' }
 const actionLabels = { add: '添加', remove: '删除', refresh: '探测', 'log-settings': '日志设置' }
 const authLabels = { none: '无需认证', bearer: 'Bearer Token', basic: 'Basic Auth', 'api-key': 'API Key' }
@@ -32,26 +39,30 @@ function renderActivities() {
     empty.className = 'notice'
     empty.textContent = '暂无操作记录'
     $('activities').append(empty)
+    localize()
     return
   }
   serverActivities.forEach(activity => {
     const item = document.createElement('div')
     item.className = `activity ${activity.ok ? 'success' : 'failure'}`
-    const text = document.createElement('span')
-    text.textContent = `${actionLabels[activity.action]} · ${activity.serverName} · ${activity.message}`
+    const textNode = document.createElement('span')
+    const action = text(actionLabels[activity.action], { add: 'Add', remove: 'Remove', refresh: 'Probe', 'log-settings': 'Log settings' }[activity.action])
+    textNode.textContent = `${action} · ${activity.serverName} · ${activity.message}`
     const time = document.createElement('time')
     time.textContent = formatTime(activity.ts)
-    item.append(text, time)
+    item.append(textNode, time)
     $('activities').append(item)
   })
+  localize()
 }
 
 async function save() { await chrome.storage.local.set({ servers }) }
-function setMessage(id, text, error = false) {
-  $(id).textContent = text
+function setMessage(id, message, error = false) {
+  $(id).textContent = message
   $(id).style.color = error ? '#f59aab' : ''
+  localize()
 }
-function formatTime(timestamp) { return timestamp ? new Date(timestamp).toLocaleString('zh-CN', { hour12: false }) : '尚未探测' }
+function formatTime(timestamp) { return timestamp ? new Date(timestamp).toLocaleString(language === 'en' ? 'en-US' : 'zh-CN', { hour12: false }) : text('尚未探测', 'Not probed yet') }
 async function requestLogSync() {
   const response = await chrome.runtime.sendMessage({ type: 'mcpwindow-access-logs-sync' })
   if (!response?.ok) throw new Error(response?.error || '访问日志同步失败')
@@ -70,8 +81,8 @@ function renderLogDashboard(server) {
   $('log-success-24h').textContent = recentTotal ? `${(count(successful) / recentTotal * 100).toFixed(1)}%` : '—'
   const meta = accessLogMeta[server.id]
   const syncedAt = meta?.lastSyncAt || lastAccessLogSyncAt
-  $('log-sync-time').textContent = `每 30 分钟同步${syncedAt ? ` · ${formatTime(syncedAt)}` : ''}`
-  setMessage('log-sync-error', meta?.error ? `日志同步失败：${meta.error}` : '', !!meta?.error)
+  $('log-sync-time').textContent = `${text('每 30 分钟同步', 'Sync every 30 minutes')}${syncedAt ? ` · ${formatTime(syncedAt)}` : ''}`
+  setMessage('log-sync-error', meta?.error ? `${text('日志同步失败', 'Log sync failed')}：${meta.error}` : '', !!meta?.error)
   renderLineChart($('trend-chart'), dailySeries(logs, now))
   renderBarChart($('hourly-chart'), hourlySeries(logs, now))
   renderEndpoints($('endpoint-chart'), logs.filter(log => log.ts >= now - 14 * 86400000))
@@ -104,7 +115,7 @@ function render() {
   const counts = { online: 0, auth: 0, offline: 0, unknown: 0 }
   servers.forEach(server => { counts[server.status || 'unknown'] += 1 })
   $('summary').textContent = servers.length
-    ? `${servers.length} 台服务器 · ${counts.online} 在线 · ${counts.auth} 需凭证 · ${counts.offline} 离线`
+    ? text(`${servers.length} 台服务器 · ${counts.online} 在线 · ${counts.auth} 需凭证 · ${counts.offline} 离线`, `${servers.length} servers · ${counts.online} online · ${counts.auth} need credentials · ${counts.offline} offline`)
     : '尚未添加远程 MCP 服务器'
   const visibleServers = filterAndSortServers(servers, $('server-search').value, $('server-status-filter').value, $('server-sort').value)
   const customOrder = $('server-sort').value === 'custom' && !$('server-search').value.trim() && $('server-status-filter').value === 'all'
@@ -114,6 +125,7 @@ function render() {
     empty.className = 'notice empty-result'
     empty.textContent = '没有符合条件的服务器'
     root.append(empty)
+    localize()
     return
   }
   visibleServers.forEach(server => {
@@ -123,7 +135,7 @@ function render() {
     card.dataset.serverId = server.id
     card.tabIndex = 0
     card.setAttribute('role', 'button')
-    card.setAttribute('aria-label', `查看 ${server.name} 详情${customOrder ? '，长按可拖动排序' : ''}`)
+    card.setAttribute('aria-label', text(`查看 ${server.name} 详情${customOrder ? '，长按可拖动排序' : ''}`, `View ${server.name}${customOrder ? '; long-press to reorder' : ''}`))
     const dot = document.createElement('span')
     dot.className = 'status-dot'
     const info = document.createElement('div')
@@ -141,12 +153,12 @@ function render() {
     state.textContent = labels[server.status || 'unknown']
     const remove = document.createElement('button')
     remove.className = 'delete'
-    remove.title = `删除 ${server.name}`
-    remove.setAttribute('aria-label', `删除 ${server.name}`)
+    remove.title = text(`删除 ${server.name}`, `Remove ${server.name}`)
+    remove.setAttribute('aria-label', remove.title)
     remove.textContent = '×'
     remove.addEventListener('click', async event => {
       event.stopPropagation()
-      if (!confirm(`删除服务器“${server.name}”及其已保存凭证？`)) return
+      if (!confirm(text(`删除服务器“${server.name}”及其已保存凭证？`, `Remove “${server.name}” and its saved credentials?`))) return
       servers = servers.filter(item => item.id !== server.id)
       accessLogs = accessLogs.filter(log => log.serverId !== server.id)
       delete accessLogMeta[server.id]
@@ -157,6 +169,7 @@ function render() {
     card.append(dot, info, state, remove)
     root.append(card)
   })
+  localize()
 }
 
 async function refreshOne(server) {
@@ -203,6 +216,13 @@ attachCardInteractions($('servers'), {
   },
 })
 
+$('language-toggle').addEventListener('click', async () => {
+  language = language === 'zh' ? 'en' : 'zh'
+  await chrome.storage.local.set({ language })
+  render()
+  renderActivities()
+  if (detailId) renderDetail()
+})
 $('auth-type').addEventListener('change', updateAuthFields)
 $('server-search').addEventListener('input', render)
 $('server-status-filter').addEventListener('change', render)
@@ -337,7 +357,8 @@ if (embedded) {
   header.addEventListener('pointerup', endDrag)
   header.addEventListener('pointercancel', endDrag)
 }
-const stored = await chrome.storage.local.get(['servers', 'accessLogs', 'accessLogMeta', 'lastAccessLogSyncAt', 'serverActivities'])
+const stored = await chrome.storage.local.get(['servers', 'accessLogs', 'accessLogMeta', 'lastAccessLogSyncAt', 'serverActivities', 'language'])
+language = stored.language === 'en' ? 'en' : 'zh'
 servers = Array.isArray(stored.servers) ? stored.servers : []
 accessLogs = Array.isArray(stored.accessLogs) ? stored.accessLogs : []
 accessLogMeta = stored.accessLogMeta && typeof stored.accessLogMeta === 'object' ? stored.accessLogMeta : {}

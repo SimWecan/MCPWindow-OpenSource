@@ -8,8 +8,10 @@ import Modal from '../components/Modal'
 import { createBackup, parseBackup, saveBackup } from '../utils/backup'
 import { refreshServerStatuses } from '../utils/status'
 import { useAccessLogRefresh } from '../utils/useAccessLogRefresh'
+import { useTranslation } from '../i18n'
 
 export default function Dashboard() {
+  const { t } = useTranslation()
   const colors = chartColors()
   const PALETTE = colors.palette
   const servers = useStore((s) => s.servers)
@@ -164,7 +166,7 @@ export default function Dashboard() {
       <div className="page-header">
         <div>
           <h2 className="page-title">总览</h2>
-          <div className="page-sub">MCP 集群运行状态一览 · {partitions.filter((p) => !p.archived).length} 个分区</div>
+          <div className="page-sub">{t(`MCP 集群运行状态一览 · ${partitions.filter((p) => !p.archived).length} 个分区`)}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn" disabled={logsRefreshing} onClick={() => void refreshLogs()}>{logsRefreshing ? '日志刷新中…' : '↻ 刷新日志'}</button>

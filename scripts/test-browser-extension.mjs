@@ -50,6 +50,16 @@ try {
   await expect(popup.locator('body')).toHaveCSS('width', '480px')
   await expect(popup.locator('#pin')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await expect(popup.locator('#pin svg')).toBeVisible()
+  await popup.locator('#language-toggle').click()
+  await expect(popup.locator('html')).toHaveAttribute('lang', 'en')
+  await expect(popup.locator('#summary')).toHaveText('No remote MCP servers yet')
+  await expect(popup.locator('#server-search')).toHaveAttribute('placeholder', 'Search name or URL')
+  await expect(popup.locator('#parse-json')).toHaveText('Parse and fill')
+  await popup.reload()
+  await expect(popup.locator('#summary')).toHaveText('No remote MCP servers yet')
+  await popup.locator('#language-toggle').click()
+  await expect(popup.locator('#summary')).toHaveText('尚未添加远程 MCP 服务器')
+  console.log('✓ 中英文切换、静态与动态文案及语言偏好持久化')
   await popup.evaluate(async managementUrl => {
     await chrome.storage.local.set({ servers: [
       { id: 'first', name: 'Alpha', url: 'http://127.0.0.1:9/mcp', authType: 'bearer', credential: 'dummy-secret', managementUrl, managementKey: 'dummy-admin', status: 'unknown' },

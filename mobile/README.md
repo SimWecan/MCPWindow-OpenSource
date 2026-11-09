@@ -90,6 +90,14 @@ export ANDROID_SDK_ROOT="$ANDROID_HOME"
 ../../tools/flutter/bin/flutter build apk --debug
 ```
 
+iOS 模拟器构建与运行（无签名，Xcode 27.2 已验证）：
+
+```bash
+../../tools/flutter/bin/flutter build ios --debug --simulator
+xcrun simctl install <模拟器 UDID> build/ios/iphonesimulator/Runner.app
+xcrun simctl launch <模拟器 UDID> top.terrafin.mcpwindowMobile
+```
+
 为节省本机存储，Android 模拟器（`mcpwindow_pixel` AVD 与系统镜像）已删除，
 Android 真机/模拟器测试改在其他机器进行；本机仅保留 `mcpwindow-iphone` 一个
 iOS 模拟器。Xcode 27.2 已激活，`tools/Xcode.app` 是指向 `/Applications/Xcode.app`

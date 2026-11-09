@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MCPWindow Companion",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "钉住并拖动 MCP 管理面板，智能识别配置，查看状态及访问日志图表。",
   "permissions": ["storage", "alarms", "activeTab", "scripting"],
   "host_permissions": ["http://*/*", "https://*/*"],

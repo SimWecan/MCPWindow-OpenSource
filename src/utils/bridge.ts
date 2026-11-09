@@ -28,6 +28,22 @@ export interface BridgeApi {
   pluginHostResult?: (id: string, ok: boolean, result?: unknown, error?: string) => void
   onPluginHostCall?: (cb: (id: string, action: string, args: unknown) => void) => () => void
   onProcExit?: (cb: (id: string, code: number | null) => void) => () => void
+  pairingStatus?: () => Promise<import('./pairing').PairingStatus>
+  pairingSetEnabled?: (enabled: boolean) => Promise<import('./pairing').PairingStatus>
+  pairingRegenerateToken?: () => Promise<import('./pairing').PairingStatus>
+  pairingSync?: (snapshot: unknown) => Promise<{ ok: boolean; devices: number }>
+  pairingCommandResult?: (id: string, result: { ok: boolean; error?: string }) => void
+  onPairingCommand?: (cb: (id: string, method: string, params: Record<string, unknown>) => void) => () => void
+  tunnelStatus?: () => Promise<TunnelStatus>
+  tunnelStart?: (port: number) => Promise<TunnelStatus>
+  tunnelStop?: () => Promise<TunnelStatus>
+}
+
+/** cloudflared quick tunnel 状态（远程访问链接）。 */
+export interface TunnelStatus {
+  running: boolean
+  url?: string
+  error?: string
 }
 
 /** Electron 预加载桥；浏览器预览和非浏览器测试环境返回 undefined。 */

@@ -10,8 +10,11 @@ const files = {
   'win32-x64': `MCPWindow-Setup-${pkg.version}.exe`,
   browser: `MCPWindow-Companion-${pkg.version}.zip`,
 }
-const artifacts = Object.fromEntries(Object.entries(files).map(([platform, name]) => {
-  const content = fs.readFileSync(path.join(root, 'release', name))
+const existing = Object.entries(files).filter(([, name]) => fs.existsSync(path.join(root, 'release', name)))
+const apk = path.join(root, 'mobile', `MCPWindow-mobile-${pkg.version}-debug.apk`)
+if (fs.existsSync(apk)) existing.push(['android-arm64', `MCPWindow-mobile-${pkg.version}-debug.apk`])
+const artifacts = Object.fromEntries(existing.map(([platform, name]) => {
+  const content = fs.readFileSync(fs.existsSync(path.join(root, 'release', name)) ? path.join(root, 'release', name) : apk)
   return [platform, {
     url: `https://software.terrafin.top/downloads/${name}`,
     size: content.length,

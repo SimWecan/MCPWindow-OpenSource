@@ -1,6 +1,6 @@
 {
   "name": "mcp-window",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "MCPWindow - 跨平台 MCP 服务器可视化管理台（Windows / macOS / Linux）",
   "private": true,
   "author": "MCPWindow Contributors",
@@ -16,7 +16,8 @@
     "preview": "vite preview --host --port 7100",
     "electron:build": "tsc -p electron/tsconfig.json && vite build && node scripts/build.cjs",
     "electron:dir": "tsc -p electron/tsconfig.json && vite build && node scripts/build.cjs --dir",
-    "dev:electron": "concurrently -k \"vite --host --port 7100\" \"wait-on http://localhost:7100 && cross-env MCPWINDOW_DEV=1 electron .\""
+    "dev:electron": "concurrently -k \"vite --host --port 7100\" \"wait-on http://localhost:7100 && cross-env MCPWINDOW_DEV=1 electron .\"",
+    "test:pairing": "tsc -p electron/tsconfig.json && node scripts/test-pairing-server.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
@@ -83,5 +84,9 @@
       "category": "Utility",
       "artifactName": "${productName}-${version}.${ext}"
     }
+  },
+  "dependencies": {
+    "@types/qrcode": "^1.5.6",
+    "qrcode": "^1.5.4"
   }
 }

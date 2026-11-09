@@ -202,7 +202,26 @@ input, select, textarea {
 }
 input::placeholder, textarea::placeholder { color: var(--text-3); }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-select { cursor: pointer; }
+select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 32px;
+  /* 主题感知的渐变箭头：颜色跟随 --text-2，悬停/聚焦时提亮 */
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-2) 50%),
+    linear-gradient(135deg, var(--text-2) 50%, transparent 50%);
+  background-position:
+    calc(100% - 19px) 52%,
+    calc(100% - 14px) 52%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+select:hover, select:focus {
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text) 50%),
+    linear-gradient(135deg, var(--text) 50%, transparent 50%);
+}
 label { display: block; font-size: 12px; color: var(--text-2); margin: 0 0 6px; font-weight: 500; }
 .field { margin-bottom: 14px; }
 .field-hint { color: var(--text-3); font-size: 11.5px; line-height: 1.6; margin-top: 6px; }
@@ -461,3 +480,18 @@ tr:hover td { background: var(--accent-soft-2); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ---- 移动端配对 ---- */
+.pairing-entry { width: 100%; margin: 8px 0 6px; }
+.pairing-body { display: flex; flex-direction: column; gap: 14px; padding: 4px 2px; min-width: 320px; }
+.pairing-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.pairing-active { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.pairing-hint { color: var(--text-dim, #8a93a6); font-size: 13px; line-height: 1.6; margin: 0; }
+.pairing-qr { width: 232px; height: 232px; border-radius: 12px; background: #fff; padding: 8px; }
+.pairing-urls { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.pairing-urls code { background: var(--bg-soft, #1c1830); padding: 4px 10px; border-radius: 8px; font-size: 13px; }
+.pairing-token { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.pairing-token code { background: var(--bg-soft, #1c1830); padding: 4px 10px; border-radius: 8px; }
+.pairing-meta { color: var(--text-dim, #8a93a6); font-size: 12px; margin: 0; }
+.pairing-actions { display: flex; gap: 10px; }
+.pairing-notice { color: var(--accent, #22c993); font-size: 13px; margin: 0; }

@@ -1,12 +1,14 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import { I18nRuntime, useTranslation } from './i18n'
 import { subscribeProcExit } from './utils/control'
 import { registerPluginHost } from './utils/pluginHostApi'
 import { refreshServerData, startStatusPolling } from './utils/status'
+import { startPairingRuntime } from './utils/pairing'
 import { useStore } from './store/useStore'
 import { useTheme } from './store/useTheme'
+import PairingModal from './components/PairingModal'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Partitions = lazy(() => import('./pages/Partitions'))
@@ -40,6 +42,7 @@ export default function App() {
   const servers = useStore((s) => s.servers)
   const liveStatus = useStore((s) => s.liveStatus)
   const { t } = useTranslation()
+  const [pairingOpen, setPairingOpen] = useState(false)
   const localConfigImported = useStore((s) => s.localConfigImported)
   const importLocalConfig = useStore((s) => s.importLocalConfig)
   useTheme((state) => state.theme)
@@ -52,6 +55,9 @@ export default function App() {
   }, [localConfigImported, importLocalConfig])
 
   useEffect(() => registerPluginHost(), [])
+
+  // 移动端配对运行时：状态快照同步 + 转发命令执行；仅桌面端生效。
+  useEffect(() => startPairingRuntime(), [])
 
   // 等加密配置恢复后再启动探测，避免首轮只探测到初始种子数据。
   useEffect(() => {
@@ -90,6 +96,9 @@ export default function App() {
         </nav>
         <div className="sidebar-footer">
           <div className="sidebar-status"><span className="dot" />{t(`运行中 ${running} · 异常 ${crashed}`)}</div>
+          <button className="btn ghost pairing-entry" onClick={() => setPairingOpen(true)}>
+            {t('移动端配对')}
+          </button>
           <ThemeSwitcher />
         </div>
       </aside>
@@ -106,6 +115,7 @@ export default function App() {
           </Routes>
         </Suspense>
       </main>
+      <PairingModal open={pairingOpen} onClose={() => setPairingOpen(false)} />
     </div>
   )
 }

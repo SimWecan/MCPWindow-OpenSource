@@ -8,8 +8,31 @@ export interface BundledServer extends Omit<MCPServer, 'id' | 'createdAt' | 'arc
   id: string
 }
 
-// 公共版本不预置任何个人服务器、路径或管理凭证。
-export const bundledLocalServers: BundledServer[] = []
+export const bundledLocalServers: BundledServer[] = [
+  {
+    id: 's-local-ark-git',
+    name: 'arknights-club-git',
+    partitionId: 'p-proj-ark',
+    description: 'Arknights Club 项目 Git 仓库（本地 stdio）；工具调用需带 repo_path',
+    command: 'C:\\Users\\29577\\.local\\bin\\mcp-server-git.exe',
+    args: '',
+    version: '本机',
+    transport: 'stdio',
+    status: 'stopped',
+  },
+  {
+    id: 's-local-nfc-hub',
+    name: 'nfc-club-hub',
+    partitionId: 'p-proj-nfc',
+    description: 'NFC Club Hub 枢纽（远程 streamable-http + 多凭证鉴权），需 Bearer 凭证',
+    command: 'https://mcp.terrafin.top/mcp',
+    args: '',
+    version: '远端',
+    transport: 'streamable-http',
+    status: 'stopped',
+    managementUrl: 'http://127.0.0.1:8091',
+  },
+]
 
 /** 通用 mcp.json（mcpServers 格式）解析，供“手动导入”使用 */
 export interface ParsedMCPServer {

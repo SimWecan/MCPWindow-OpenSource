@@ -9,5 +9,5 @@
     "outDir": "../electron-dist",
     "sourceMap": false
   },
-  "include": ["main.cts", "preload.cts", "accessLogs.cts", "pluginManager.cts", "pluginPreload.cts", "processSupervisor.cts", "closeDialogPreload.cts"]
+  "include": ["main.cts", "preload.cts", "accessLogs.cts", "pluginManager.cts", "pluginPreload.cts", "processSupervisor.cts", "closeDialogPreload.cts", "pairingServer.cts"]
 }

@@ -61,4 +61,20 @@ contextBridge.exposeInMainWorld('mcpwindow', {
     ipcRenderer.on('mcpwindow:proc-exit', listener)
     return () => ipcRenderer.removeListener('mcpwindow:proc-exit', listener)
   },
+  // 移动端本地配对：状态/启停/令牌重建/快照同步 + 命令执行回执
+  pairingStatus: () => ipcRenderer.invoke('mcpwindow:pairing-status'),
+  pairingSetEnabled: (enabled: boolean) => ipcRenderer.invoke('mcpwindow:pairing-set-enabled', enabled),
+  pairingRegenerateToken: () => ipcRenderer.invoke('mcpwindow:pairing-regenerate-token'),
+  pairingSync: (snapshot: unknown) => ipcRenderer.invoke('mcpwindow:pairing-sync', snapshot),
+  pairingCommandResult: (id: string, result: { ok: boolean; error?: string }) =>
+    ipcRenderer.send('mcpwindow:pairing-command-result', id, result),
+  onPairingCommand: (cb: (id: string, method: string, params: Record<string, unknown>) => void) => {
+    const listener = (_e: IpcRendererEvent, id: string, method: string, params: Record<string, unknown>) => cb(id, method, params)
+    ipcRenderer.on('mcpwindow:pairing-command', listener)
+    return () => ipcRenderer.removeListener('mcpwindow:pairing-command', listener)
+  },
+  // 远程访问隧道（cloudflared quick tunnel）：状态/启停
+  tunnelStatus: () => ipcRenderer.invoke('mcpwindow:tunnel-status'),
+  tunnelStart: (port: number) => ipcRenderer.invoke('mcpwindow:tunnel-start', port),
+  tunnelStop: () => ipcRenderer.invoke('mcpwindow:tunnel-stop'),
 })

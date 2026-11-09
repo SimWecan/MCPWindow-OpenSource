@@ -151,6 +151,21 @@ export default function ThemeSwitcher() {
         open={open}
         onClose={() => setOpen(false)}
         className="settings-modal"
+        headerAction={
+          <a
+            className="developer-link"
+            href="https://space.bilibili.com/3747576937451015?spm_id_from=333.1007.0.0"
+            target="_blank"
+            rel="noreferrer"
+            aria-label={t('联系开发者')}
+          >
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m7 4 3 3m7-3-3 3M4 8h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" />
+              <path d="M7 12v3m10-3v3" />
+            </svg>
+            <span>{t('联系开发者')}</span>
+          </a>
+        }
       >
         <div className="settings-tabs" role="tablist" aria-label={t('界面设置')}>
           <button role="tab" aria-selected={tab === 'appearance'} className={`btn ${tab === 'appearance' ? 'btn-primary' : ''}`} onClick={() => setTab('appearance')}>{t('外观与语言')}</button>

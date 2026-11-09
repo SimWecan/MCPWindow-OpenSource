@@ -25,7 +25,10 @@ export default function Modal({ title, open, onClose, children, footer, headerAc
     const modal = modalRef.current
     const focusables = () => Array.from(modal?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])
       .filter((element) => element.getClientRects().length > 0)
-    focusables()[0]?.focus()
+    // 优先聚焦声明了 data-autofocus 的字段（如弹窗的主输入框），否则取第一个可聚焦元素。
+    const preferred = modal?.querySelector<HTMLElement>('[data-autofocus]')
+    if (preferred && focusables().includes(preferred)) preferred.focus()
+    else focusables()[0]?.focus()
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -40,14 +43,15 @@ export default function Modal({ title, open, onClose, children, footer, headerAc
         modal?.focus()
         return
       }
-      const first = items[0]
+      const anchor = items.find((element) => element.hasAttribute('data-autofocus')) ?? items[0]
       const last = items[items.length - 1]
-      if (event.shiftKey && document.activeElement === first) {
+      // Shift+Tab 从主输入框回绕到末尾按钮；Tab 从末尾回绕到主输入框。
+      if (event.shiftKey && document.activeElement === anchor) {
         event.preventDefault()
         last.focus()
       } else if (!event.shiftKey && document.activeElement === last) {
         event.preventDefault()
-        first.focus()
+        anchor.focus()
       }
     }
     document.addEventListener('keydown', onKeyDown)

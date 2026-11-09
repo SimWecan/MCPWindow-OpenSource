@@ -218,7 +218,7 @@ export default function ServerFormModal({ open, initial, clone = false, defaultP
         <summary>基础连接</summary>
         <div className="field">
           <label htmlFor="server-name">服务器名称 <span className="required-mark">*</span></label>
-          <input id="server-name" aria-label="服务器名称" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="输入服务器名称，例如：filesystem" />
+          <input id="server-name" data-autofocus aria-label="服务器名称" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="输入服务器名称，例如：filesystem" />
         </div>
         <div className="field">
           <label htmlFor="server-description">描述</label>

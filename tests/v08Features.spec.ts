@@ -24,6 +24,20 @@ test.afterEach(async () => {
   fs.rmSync(profile, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 })
 })
 
+test('设置窗口右上角展示联系开发者哔哩哔哩入口', async () => {
+  await page.getByRole('button', { name: '界面设置', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: '界面设置', exact: true })
+  const link = dialog.getByRole('link', { name: '联系开发者', exact: true })
+  await expect(link).toBeVisible()
+  await expect(link).toHaveAttribute('href', 'https://space.bilibili.com/3747576937451015?spm_id_from=333.1007.0.0')
+  await expect(link).toHaveAttribute('target', '_blank')
+  await expect(link.locator('svg')).toBeVisible()
+  const dialogBounds = await dialog.boundingBox()
+  const linkBounds = await link.boundingBox()
+  expect(linkBounds!.x).toBeGreaterThan(dialogBounds!.x + dialogBounds!.width / 2)
+  expect(linkBounds!.y).toBeLessThan(dialogBounds!.y + 50)
+})
+
 test('服务器查重、克隆、Tags、收藏、自定义视图和批量移动均真实生效', async () => {
   await page.getByRole('link', { name: /服务器管理$/ }).click()
   await page.getByRole('button', { name: '+ 接入服务器', exact: true }).click()

@@ -6,6 +6,8 @@ import path from 'node:path'
 import { closePluginWindows, registerPluginIpc } from './pluginManager.cjs'
 import { inspectLocalAccessLogs, type AccessLogServerConfig } from './accessLogs.cjs'
 import { registerUpdateIpc } from './updater.cjs'
+import { registerPairingIpc } from './pairingServer.cjs'
+import { registerTunnelIpc, shutdownTunnel } from './tunnel.cjs'
 
 // 启动诊断日志（桌面端启动验证用，开源版保留以便用户排障）
 const diagLog = path.join(os.tmpdir(), 'mcpwindow-main.log')
@@ -182,6 +184,8 @@ ipcMain.handle('mcpwindow:access-logs-read', (_event, server: AccessLogServerCon
 app.whenReady().then(() => {
   log(`app ready, secureStorage=${safeStorage.isEncryptionAvailable()}`)
   registerPluginIpc()
+  registerPairingIpc()
+  registerTunnelIpc()
   restoreDetachedProcesses()
   createWindow()
   app.on('activate', () => {
@@ -399,6 +403,21 @@ const resourceSamples = new Map<string, { cpuSeconds: number; sampledAt: number 
 function execText(command: string, args: string[]): Promise<string> {
   return new Promise((resolve, reject) => execFile(command, args, { windowsHide: true, timeout: 4_000 }, (error, stdout) => error ? reject(error) : resolve(stdout)))
 }
+
+/// 解析 macOS ps 的 time=/etime= 时长：[[DD-]HH:]MM:SS → 秒。
+function parseElapsed(value: string | undefined): number {
+  if (!value) return 0
+  let total = 0
+  let rest = value.trim()
+  const days = /^(\d+)-/.exec(rest)
+  if (days) { total += Number(days[1]) * 86400; rest = rest.slice(days[0].length) }
+  const parts = rest.split(':').map(Number)
+  if (parts.some((part) => !Number.isFinite(part))) return 0
+  if (parts.length === 3) total += parts[0] * 3600 + parts[1] * 60 + parts[2]
+  else if (parts.length === 2) total += parts[0] * 60 + parts[1]
+  else total += parts[0] || 0
+  return total
+}
 ipcMain.handle('mcpwindow:proc-metrics', async (_event, requestedIds: string[]) => {
   const ids = Array.isArray(requestedIds) ? requestedIds.filter((id) => runningPid(id)).slice(0, 100) : []
   return Promise.all(ids.map(async (id) => {
@@ -416,6 +435,13 @@ ipcMain.handle('mcpwindow:proc-metrics', async (_event, requestedIds: string[]) 
       const dotnetDate = /\/Date\((-?\d+)(?:[+-]\d{4})?\)\//.exec(value.StartTime)
       const startedAt = dotnetDate ? Number(dotnetDate[1]) : Date.parse(value.StartTime)
       uptimeSeconds = Number.isFinite(startedAt) ? Math.max(0, (now - startedAt) / 1000) : 0
+    } else if (process.platform === 'darwin') {
+      // macOS ps 没有 times/etimes 关键字：time= 为累计 CPU 时间，etime= 为 [[dd-]hh:]mm:ss 时长。
+      const raw = await execText('ps', ['-p', String(pid), '-o', 'time=,rss=,etime='])
+      const [time, rss, etime] = raw.trim().split(/\s+/)
+      cpuSeconds = parseElapsed(time)
+      memoryMB = Number(rss) / 1024
+      uptimeSeconds = parseElapsed(etime)
     } else {
       const raw = await execText('ps', ['-p', String(pid), '-o', 'times=,rss=,etimes='])
       const [times, rss, etimes] = raw.trim().split(/\s+/)
@@ -483,6 +509,7 @@ ipcMain.handle('mcpwindow:proc-list', () => [...new Set([...managed.keys(), ...d
 // 应用生命周期与 MCP 生命周期解耦：仅关闭插件的沙箱窗口，不停止任何 MCP。
 app.on('before-quit', () => {
   allowWindowClose = true
+  shutdownTunnel()
   detachSupervisors()
   closePluginWindows()
   tray?.destroy()

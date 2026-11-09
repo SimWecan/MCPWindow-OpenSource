@@ -36,6 +36,7 @@ const DYNAMIC: Array<[RegExp, (...values: string[]) => string]> = [
   [/^备份合并完成：新增 (\d+) 个分区、(\d+) 台服务器，跳过 (\d+) 项冲突$/, (partitions, servers, skipped) => `Backup merged: ${partitions} partitions and ${servers} servers added; ${skipped} conflicts skipped`],
   [/^(导出失败|导入失败|权限验证失败)：(.+)$/s, (label, detail) => `${{ 导出失败: 'Export failed', 导入失败: 'Import failed', 权限验证失败: 'Access verification failed' }[label]}: ${detail}`],
   [/^第 (\d+) \/ (\d+) 页$/, (page, count) => `Page ${page} of ${count}`],
+  [/^配对服务运行中 · 端口 (\d+) · 已连接 (\d+) 台设备$/, (port, devices) => `Pairing running · port ${port} · ${devices} device(s) connected`],
 ]
 
 export function translateText(value: string, language: Language): string {
